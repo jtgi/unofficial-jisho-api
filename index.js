@@ -12,12 +12,16 @@ import { XmlEntities } from 'html-entities';
 
 const axios = axiosBuilder.create({ timeout: 10000 });
 
-const JISHO_API = 'https://jisho.org/api/v1/search/words';
-const SCRAPE_BASE_URI = 'https://jisho.org/search/';
+const PROXY = window.location.hostname === "localhost"
+  ? "https://cors-anywhere.herokuapp.com"
+  : "/cors-proxy";
+
+const JISHO_API = `${PROXY}/https://jisho.org/api/v1/search/words`;
+const SCRAPE_BASE_URI = `${PROXY}/https://jisho.org/search/`;
 
 // This link does not use https because as of June 5, 2021 SSL is broken on classic.jisho.org
 // (and even if it's been fixed since then, it will be safer to keep this as-is)
-const STROKE_ORDER_DIAGRAM_BASE_URI = 'http://classic.jisho.org/static/images/stroke_diagrams/';
+const STROKE_ORDER_DIAGRAM_BASE_URI = `${PROXY}/http://classic.jisho.org/static/images/stroke_diagrams/`;
 
 const htmlEntities = new XmlEntities();
 
@@ -188,13 +192,13 @@ function getParts(pageHtml) {
 function getSvgUri(pageHtml) {
   const svgRegex = /\/\/.*?.cloudfront.net\/.*?.svg/;
   const regexResult = svgRegex.exec(pageHtml);
-  return regexResult ? `https:${regexResult[0]}` : undefined;
+  return regexResult ? `${PROXY}/https:${regexResult[0]}` : undefined;
 }
 
 function getGifUri(kanji) {
   const unicodeString = kanji.codePointAt(0).toString(16);
   const fileName = `${unicodeString}.gif`;
-  const animationUri = `https://raw.githubusercontent.com/mistval/kanji_images/master/gifs/${fileName}`;
+  const animationUri = `${PROXY}/https://raw.githubusercontent.com/mistval/kanji_images/master/gifs/${fileName}`;
 
   return animationUri;
 }
@@ -431,14 +435,14 @@ function getAudio($) {
   $('.concept_light-status')
     .find('audio > source')
     .each((_, element) => audio.push({
-      uri: `https:${element.attribs.src}`,
+      uri: `${PROXY}/https:${element.attribs.src}`,
       mimetype: element.attribs.type,
     }));
   return audio;
 }
 
 function uriForPhraseScrape(searchTerm) {
-  return `https://jisho.org/word/${encodeURIComponent(searchTerm)}`;
+  return `${PROXY}/https://jisho.org/word/${encodeURIComponent(searchTerm)}`;
 }
 
 function parsePhrasePageData(pageHtml, query) {
